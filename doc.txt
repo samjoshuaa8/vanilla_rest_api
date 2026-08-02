@@ -75,3 +75,22 @@ import java.lang.reflect.Modifier;
 //curl.exe -i http://localhost:8080/api/status (default GET method)
 //curl.exe -i -X POST -d "Sensor_ID_9041" http://localhost:8080/api/echo
 //-i->include the HTTP response headers, -X->method, -d->data
+
+notepad .gitignore
+{.gitignore
+
+*.class
+.idea/}
+git init
+git status
+git add .
+{git config --global user.email "email"
+git config --global user.name "name"}
+git commit -m "message"
+git branch -m main
+git remote add origin "github_repo_https"
+git push -u origin main
+
+git add . 
+git commit -m "message"
+git push -u origin main
