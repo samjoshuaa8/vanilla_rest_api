@@ -1,0 +1,77 @@
+import com.sun.net.httpserver.HttpServer;    // Server creation & socket binding
+import com.sun.net.httpserver.HttpHandler;   // Request handling interface
+import com.sun.net.httpserver.HttpExchange;  // Request/Response envelope
+
+import java.net.InetSocketAddress;           // IP and TCP port binding
+
+import java.io.IOException;                  // I/O exception handling
+import java.io.InputStream;                  // Request body stream
+import java.io.OutputStream;                 // Response body stream
+import java.nio.charset.StandardCharsets;    // UTF-8 binary encoding
+
+RestApi.java
+1. create a HttpServer object through HttpServer.create method using arguments: a TCP (Transmission Control Protocal) port is specified with an help of an InetSocketAddress object and backlog connection queue size will be same as os's queue size by enter value 0 (as a result a tcp socket is created).
+2. create a route using HttpServer.createContext method with arguments: the path and a object with a HttpHandler interface.
+3. using HttpServer.setExecutor method and argument as null: the server is declared as single threaded (requests dealt one at a time sequentially).
+4. HttpServer.start method is used to start the server (starts an infinite loop in the socket created in step 1 waiting for TCP packets).
+
+
+Try-With-Resources that automatically closes network streams, files, or database connections when code finishes executing, preventing operating system resource leaks.
+The Java compiler translates it into a zero-leak try-catch-finally block (automatically calls .close()) during bytecode generation.
+check:
+[if (<Object> instanceof AutoCloseable) {
+    System.out.println("Can be used in try-with-resources!");
+}]
+
+StatusHandler.java
+1. statusHandler object is created through HttpHandler interface.
+2. overrides HttpHandler interface's handle method with argument HttpExchange object - 
+	a sealed envelope that holds everything about a single HTTP interaction between a client and a server.
+3. allowable methods are checked for, if check fails then 405 error code with the content length of -1 (means no response body) and exits.
+4. payload construction in json by serialization and convert them to byte array (using explicit UTF-8 binary encoding).
+5. sending headers (get response [by HttpExchange.getResponseHeaders().set method for "content-type" as "application/json" & send response [by  HttpExchange.sendResponseHeaders method with arguments: HTTP status and content length]).
+6. data transmission by opening the socket response stream using try-with-resource, writes the bytes to the wire and automatically closes the stream to flush data and release the OS socket handle.
+
+EchoHandler.java
+1. echoHandler object is created by implementing the HttpHandler interface.
+2. overrides the handle method with an HttpExchange argument - 
+	a sealed envelope that holds everything about a single HTTP interaction between client and server.
+3. checks allowable HTTP methods,. If the check fails then sends a 405 error code with a content length of -1 (meaning no response body) and exits.
+4. reads request InputStream payload (opens the socket request input stream using Try-With-Resources) optionally can be converted to String object.
+5. payload construction in (json by serialization\directly String object) convert them to byte array (using explicit UTF-8 binary encoding).
+6. sending headers (get response [by HttpExchange.getResponseHeaders().set method for "content-type" as "application/json" & send response [by  HttpExchange.sendResponseHeaders method with arguments: HTTP status and content length]).
+7. data Transmission by opens the output stream inside a Try-With-Resources, writes the exact received request bytes back to the wire and automatically closes both streams to flush data, send the TCP EOF signal (socket closes), and release OS socket handles.
+
+Concrete Class: It holds fields and methods.
+Instantiation and extends allowed 
+Abstract Class: It holds fields, methods, and abstract methods (methods with no body that subclasses must implement).
+Instantiation not allowed but extends allowed
+Interface: It contains method signatures alone.
+implements allowed and multiple inheritable 
+check:
+import java.lang.reflect.Modifier;
+
+[public class TypeChecker {
+    public static void checkType(Class<?> clazz) {
+        System.out.println("Checking: " + clazz.getName());
+
+        if (clazz.isInterface()) {
+            System.out.println("-> Result: INTERFACE");
+        } 
+        else if (Modifier.isAbstract(clazz.getModifiers())) {
+            System.out.println("-> Result: ABSTRACT CLASS");
+        } 
+        else {
+            System.out.println("-> Result: CONCRETE CLASS");
+        }
+        System.out.println("--------------------------------");
+    }
+
+    public static void main(String[] args) {
+        checkType(<class>.class);
+    }
+}]
+
+//curl.exe -i http://localhost:8080/api/status (default GET method)
+//curl.exe -i -X POST -d "Sensor_ID_9041" http://localhost:8080/api/echo
+//-i->include the HTTP response headers, -X->method, -d->data
