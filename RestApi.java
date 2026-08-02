@@ -11,12 +11,12 @@ import java.nio.charset.StandardCharsets;
 public class RestApi{
     public static void main(String[] args) throws IOException{
         int port = 8080;
-        HttpServer server = HttpServer.create(new InetSocketAddress(port),0); //default os number of waiting connections
+        HttpServer server = HttpServer.create(new InetSocketAddress(port),0);
 
         server.createContext("/api/status",new StatusHandler());
         server.createContext("/api/echo",new EchoHandler());
 
-        server.setExecutor(null); //requests one at a time sequentially
+        server.setExecutor(null);
         System.out.println("Server running on port "+port);
         server.start();
     }
